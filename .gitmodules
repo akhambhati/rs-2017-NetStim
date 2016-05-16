@@ -1,3 +1,9 @@
 [submodule "Codebase/Networks/nonnegfac-python"]
 	path = Codebase/Networks/SubgraphDetection/nonnegfac
 	url = git@github.com:akhambhati/nonnegfac-python
+[submodule "Codebase/Networks/SubgraphDetection/--recursive"]
+	path = Codebase/Networks/SubgraphDetection/--recursive
+	url = git@github.com:akhambhati/nonnegfac.git
+[submodule "Codebase/Networks/SubgraphDetection/nonnegfac"]
+	path = Codebase/Networks/SubgraphDetection/nonnegfac
+	url = git@github.com:akhambhati/nonnegfac.git
