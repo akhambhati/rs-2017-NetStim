@@ -6,6 +6,16 @@ from ..Common.display import my_display
 from ..Networks.SubgraphDetection.nonnegfac import nmf
 
 def execute(expr_id, path_cfg_matr, param_id, param_alpha, param_beta, param_rank, path_output):
+    # Cast appropriate data types
+    expr_id = str(expr_id)
+    path_cfg_matr = str(path_cfg_matr)
+    param_id = int(param_id)
+    param_alpha = float(param_alpha)
+    param_beta = float(param_beta)
+    param_rank = int(param_rank)
+    path_output = str(param_output)
+
+    # Begin function
     my_display("\n -- Processing: {} -- Parameter: {}".format(expr_id, param_id), True)
 
     df = np.load(path_cfg_matr)
@@ -14,10 +24,10 @@ def execute(expr_id, path_cfg_matr, param_id, param_alpha, param_beta, param_ran
 
     # Initialize the factors for NMF
     fac_subnet = np.random.uniform(low=0, high=1.0,
-                                   size=(int(param_rank),
+                                   size=(param_rank,
                                          cfg_matr.shape[1]))
     fac_coef = np.random.uniform(low=0, high=1.0,
-                                 size=(int(param_rank),
+                                 size=(param_rank,
                                        cfg_matr.shape[0]))
 
     # Run NMF Algorithm
