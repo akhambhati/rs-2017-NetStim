@@ -13,7 +13,7 @@ def execute(expr_id, path_cfg_matr, param_id, param_alpha, param_beta, param_ran
     param_alpha = float(param_alpha)
     param_beta = float(param_beta)
     param_rank = int(param_rank)
-    path_output = str(param_output)
+    path_output = str(path_output)
 
     # Begin function
     my_display("\n -- Processing: {} -- Parameter: {}".format(expr_id, param_id), True)
