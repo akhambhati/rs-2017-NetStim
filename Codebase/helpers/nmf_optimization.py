@@ -7,17 +7,17 @@ from ..Networks.SubgraphDetection.nonnegfac import nmf
 
 def execute(expr_id, path_cfg_matr, param_id, param_alpha, param_beta, param_rank, path_output):
     my_display("\n -- Processing: {} -- Parameter: {}".format(expr_id, param_id), True)
-    
+
     df = np.load(path_cfg_matr)
-        
+
     cfg_matr = np.nan_to_num(df['cfg_matr'])
-        
+
     # Initialize the factors for NMF
     fac_subnet = np.random.uniform(low=0, high=1.0,
-                                   size=(param_rank,
+                                   size=(int(param_rank),
                                          cfg_matr.shape[1]))
     fac_coef = np.random.uniform(low=0, high=1.0,
-                                 size=(param_rank,
+                                 size=(int(param_rank),
                                        cfg_matr.shape[0]))
 
     # Run NMF Algorithm
