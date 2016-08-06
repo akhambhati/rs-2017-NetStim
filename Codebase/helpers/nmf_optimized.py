@@ -38,5 +38,5 @@ def execute(path_cfg_matr, param_id, param_alpha, param_beta, param_rank, path_o
         max_iter=100, verbose=False)
 
     # Cache the NMF result
-    np.savez("{}/NMF_Optimization.Param_{}.npz".format(path_output, param_id),
+    np.savez("{}/NMF_Optimized.Seed_{}.npz".format(path_output, param_id),
              fac_subnet=fac_subnet, fac_coef=fac_coef, err=err)
