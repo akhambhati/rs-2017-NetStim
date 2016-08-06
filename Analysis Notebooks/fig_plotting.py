@@ -43,8 +43,8 @@ def update_rcparams(rcParams):
               'axes.formatter.use_mathtext': True,
               'axes.xmargin': 0,
               'axes.ymargin': 0,
-              'axes.spines.top': False,
-              'axes.spines.right': False,
+              #'axes.spines.top': False,
+              #'axes.spines.right': False,
               'axes.color_cycle': ['5DA5DA', 'FAA43A', '60BD68', 'F17CB0', 'B2912F', 'B276B2', 'DECF3F', 'F15854', '4D4D4D'],
               'polaraxes.grid': True,
            
