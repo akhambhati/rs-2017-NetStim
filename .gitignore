@@ -64,3 +64,4 @@ coverage.xml
 *.pot
 
 *.ds_store
+core.*
