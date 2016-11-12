@@ -1,3 +1,0 @@
-[submodule "Codebase/Networks/SubgraphDetection/nonnegfac"]
-	path = Codebase/Networks/SubgraphDetection/nonnegfac
-	url = git@github.com:akhambhati/nonnegfac.git
