@@ -1,0 +1,52 @@
+#!/bin/zsh
+
+source activate echobase
+ipython -c "
+
+import sys
+import h5py
+import scipy.io as io
+import numpy as np
+
+sys.path.append('/home/akhambhati/JagHome/hoth_research/Echobase')
+import Echobase
+
+# Load data
+df = h5py.File('$1', 'r')
+df_chan = io.loadmat('$2')
+df_meta = h5py.File('$3', 'r')
+
+# Make sure the good channel lists are correct
+assert (df_meta['good_channels_ind'].shape[0] == df_chan['good_channels'].shape[1])
+
+# Retrieve data
+evData = df['evData'][...]
+fs = int(np.ceil(df_meta['samp_freq'][0, 0]))
+good_chan = np.array(map(int, df_meta['good_channels_ind'][:,0]-1))
+
+# Handle electrodes 
+# Keep only good channels
+evData = evData[:, good_chan]
+n_win, n_chan = evData.shape
+
+# Remove stim electrodes from network
+all_chan_ix = np.arange(n_chan)
+evData = evData[:, list(np.setdiff1d(all_chan_ix, df_chan['stim_ind_ofgoodch']-1))]
+
+
+# Formulate output dictionary
+adj = {'No_Stim': {}}
+
+try:
+    # Compute No-Stim Adjacency
+    adj['No_Stim']['AlphaTheta'], adj['No_Stim']['Beta'], adj['No_Stim']['LowGamma'], adj['No_Stim']['HighGamma'] = Echobase.Pipelines.ecog_network.multiband_conn(evData[...], fs)
+
+except:
+    adj['No_Stim']['AlphaTheta'] = np.nan*np.zeros((n_chan, n_chan))
+    adj['No_Stim']['Beta'] = np.nan*np.zeros((n_chan, n_chan))
+    adj['No_Stim']['LowGamma'] = np.nan*np.zeros((n_chan, n_chan))
+    adj['No_Stim']['HighGamma'] = np.nan*np.zeros((n_chan, n_chan))
+
+# Save the output
+np.savez('$4', adj=adj)
+"

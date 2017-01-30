@@ -5,6 +5,7 @@ ipython -c "
 
 import sys
 import h5py
+import scipy.io as io
 import numpy as np
 
 sys.path.append('/home/akhambhati/JagHome/hoth_research/Echobase')
@@ -12,24 +13,24 @@ import Echobase
 
 # Load data
 df = h5py.File('$1', 'r')
+df_chan = io.loadmat('$2')
+
+# Make sure the good channel lists are correct
+assert (df['good_channels_ind'].shape[0] == df_chan['good_channels'].shape[1])
 
 # Retrieve data
 evData = df['evData'][...]
 fs = int(np.ceil(df['samp_freq'][0, 0]))
 good_chan = np.array(map(int, df['good_channels_ind'][:,0]-1))
-stim_chan = np.array(map(int, df['ch_stim'][:,0]-1))
 
 # Handle electrodes 
 # Keep only good channels
 evData = evData[:, good_chan]
 n_win, n_chan = evData.shape
 
-# Remap stim electrodes, based on good channels
-remap_stim_ix = np.array([np.flatnonzero(good_chan == s)[0] for s in stim_chan])
-
 # Remove stim electrodes from network
 all_chan_ix = np.arange(n_chan)
-evData = evData[:, list(np.setdiff1d(all_chan_ix, remap_stim_ix))]
+evData = evData[:, list(np.setdiff1d(all_chan_ix, df_chan['stim_ind_ofgoodch']-1))]
 
 # Window the stimulation clip
 win_pre_stim = list(np.arange(fs-fs/2-1, fs-1))
@@ -38,12 +39,22 @@ win_post_stim = list(np.arange(fs+fs+1, len(evData)))
 # Formulate output dictionary
 adj = {'Pre_Stim': {}, 'Post_Stim': {}}
 
-# Compute Pre-Stim Adjacency
-adj['Pre_Stim']['AlphaTheta'], adj['Pre_Stim']['Beta'], adj['Pre_Stim']['LowGamma'], adj['Pre_Stim']['HighGamma'] = Echobase.Pipelines.ecog_network.multiband_conn(evData[win_pre_stim, :], fs)
+try:
+    # Compute Pre-Stim Adjacency
+    adj['Pre_Stim']['AlphaTheta'], adj['Pre_Stim']['Beta'], adj['Pre_Stim']['LowGamma'], adj['Pre_Stim']['HighGamma'] = Echobase.Pipelines.ecog_network.multiband_conn(evData[win_pre_stim, :], fs)
 
-# Compute Pre-Stim Adjacency
-adj['Post_Stim']['AlphaTheta'], adj['Post_Stim']['Beta'], adj['Post_Stim']['LowGamma'], adj['Post_Stim']['HighGamma'] = Echobase.Pipelines.ecog_network.multiband_conn(evData[win_post_stim, :], fs)
+    # Compute Pre-Stim Adjacency
+    adj['Post_Stim']['AlphaTheta'], adj['Post_Stim']['Beta'], adj['Post_Stim']['LowGamma'], adj['Post_Stim']['HighGamma'] = Echobase.Pipelines.ecog_network.multiband_conn(evData[win_post_stim, :], fs)
+except:
+    adj['Pre_Stim']['AlphaTheta'] = np.nan*np.zeros((n_chan, n_chan))
+    adj['Pre_Stim']['Beta'] = np.nan*np.zeros((n_chan, n_chan))
+    adj['Pre_Stim']['LowGamma'] = np.nan*np.zeros((n_chan, n_chan))
+    adj['Pre_Stim']['HighGamma'] = np.nan*np.zeros((n_chan, n_chan))
+    adj['Post_Stim']['AlphaTheta'] = np.nan*np.zeros((n_chan, n_chan))
+    adj['Post_Stim']['Beta'] = np.nan*np.zeros((n_chan, n_chan))
+    adj['Post_Stim']['LowGamma'] = np.nan*np.zeros((n_chan, n_chan))
+    adj['Post_Stim']['HighGamma'] = np.nan*np.zeros((n_chan, n_chan))
 
 # Save the output
-np.savez('$2', adj=adj)
+np.savez('$3', adj=adj)
 "
