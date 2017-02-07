@@ -14,23 +14,37 @@ import Echobase
 # Load data
 df = h5py.File('$1', 'r')
 df_chan = io.loadmat('$2')
+df_event = io.loadmat('$3')
+df_lut = h5py.File('$4', 'r')
+trial_id = int('$5')
 
 # Make sure the good channel lists are correct
-assert (df['good_channels_ind'].shape[0] == df_chan['good_channels'].shape[1])
+assert (df_chan['good_channels_jack'].shape[1] == df_chan['good_channels_ind'].shape[1])
 
 # Retrieve data
 evData = df['evData'][...]
 fs = int(np.ceil(df['samp_freq'][0, 0]))
-good_chan = np.array(map(int, df['good_channels_ind'][:,0]-1))
+good_chan = np.array(map(int, df_chan['good_channels_ind'][0,:]-1))
 
 # Handle electrodes 
 # Keep only good channels
 evData = evData[:, good_chan]
 n_win, n_chan = evData.shape
 
+# Find event in LUT
+event_ind = df_lut['trial_lut'][1,:][df_lut['trial_lut'][0,:] == trial_id]
+assert len(event_ind) == 1
+event_ind = event_ind[0] - 1
+
+# Get Stim Electrode Jacksheet label
+stim_anode_jack = df_event['events'][0, event_ind]['stimAnode'][0,0]
+stim_cathode_jack = df_event['events'][0, event_ind]['stimCathode'][0,0]
+stim_anode_ix = np.flatnonzero(df_chan['good_channels_jack'][0,:] == stim_anode_jack)[0]
+stim_cathode_ix = np.flatnonzero(df_chan['good_channels_jack'][0,:] == stim_cathode_jack)[0]
+
 # Remove stim electrodes from network
 all_chan_ix = np.arange(n_chan)
-evData = evData[:, list(np.setdiff1d(all_chan_ix, df_chan['stim_ind_ofgoodch']-1))]
+evData = evData[:, list(np.setdiff1d(all_chan_ix, [stim_anode_ix, stim_cathode_ix]))]
 
 # Window the stimulation clip
 win_pre_stim = list(np.arange(fs-fs/2-1, fs-1))
@@ -56,5 +70,5 @@ except:
     adj['Post_Stim']['HighGamma'] = np.nan*np.zeros((n_chan, n_chan))
 
 # Save the output
-np.savez('$3', adj=adj)
+np.savez('$6', adj=adj)
 "
