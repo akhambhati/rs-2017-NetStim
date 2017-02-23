@@ -64,6 +64,11 @@ coverage.xml
 *.pot
 
 *.ds_store
-core.*
 
-*.job
+# Image files
+*.tiff
+*.svg
+*.png
+*.pdf
+*.eps
+*.ai
