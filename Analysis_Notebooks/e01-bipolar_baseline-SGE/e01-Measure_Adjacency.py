@@ -95,7 +95,7 @@ adj = {'AlphaTheta': [],
 
 for win_ix in xrange(n_win):
     clip_ix = np.arange(win_ix*n_win_dur, (win_ix+1)*n_win_dur)
-    adj_AlphaTheta, adj_Beta, adj_LowGamma, adj_HighGamma = Echobase.Pipelines.ecog_network.multiband_conn(evData_bp[clip_ix, :], fs, reref=False)
+    adj_AlphaTheta, adj_Beta, adj_LowGamma, adj_HighGamma = Echobase.Pipelines.ecog_network.multiband_conn(evData_bp[clip_ix, :], fs, avgref=False)
 
     adj['AlphaTheta'].append(adj_AlphaTheta)
     adj['Beta'].append(adj_Beta)
