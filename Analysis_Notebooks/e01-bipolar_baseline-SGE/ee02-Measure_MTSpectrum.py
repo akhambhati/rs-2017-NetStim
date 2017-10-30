@@ -53,7 +53,7 @@ subj_id = pitem.split('/')[-1].split('.')[0]
 event_id = pitem.split('/')[-1].split('.')[-2]
 
 # Set output
-foutput = '{}/Adjacency.{}.npz'.format(path_ExpData, base_id)
+foutput = '{}/MTSpectrum.{}.npz'.format(path_ExpData, base_id)
 if os.path.exists(foutput):
     print('Output file already exists: {}'.format(foutput))
     sys.exit()
@@ -88,20 +88,16 @@ n_win_dur = int(0.5*fs)
 n_win = int(np.floor(n_samp / n_win_dur))
 
 # Formulate output dictionary
-adj = {'AlphaTheta': [],
-       'Beta': [],
-       'LowGamma': [],
-       'HighGamma': []}
+mtspectrum = {'freq': [],
+              'psd': []}
 
 for win_ix in xrange(n_win):
     clip_ix = np.arange(win_ix*n_win_dur, (win_ix+1)*n_win_dur)
-    adj_AlphaTheta, adj_Beta, adj_LowGamma, adj_HighGamma = Echobase.Pipelines.ecog_network.multiband_conn(evData_bp[clip_ix, :], fs, avgref=False)
+    freq, psd = Echobase.Pipelines.ecog_powerspec.multiband(evData_bp[clip_ix, :], fs, avgref=False)
 
-    adj['AlphaTheta'].append(adj_AlphaTheta)
-    adj['Beta'].append(adj_Beta)
-    adj['LowGamma'].append(adj_LowGamma)
-    adj['HighGamma'].append(adj_HighGamma)
+    mtspectrum['freq'].append(freq)
+    mtspectrum['psd'].append(psd)
 
 # Save the output
-np.savez(foutput, adj=adj)
+np.savez(foutput, mtspectrum=mtspectrum)
 "

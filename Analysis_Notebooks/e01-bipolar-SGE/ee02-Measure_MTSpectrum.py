@@ -53,7 +53,7 @@ subj_id = pitem.split('/')[-1].split('.')[0]
 event_id = pitem.split('/')[-1].split('.')[-2]
 
 # Set output
-foutput = '{}/Adjacency.{}.npz'.format(path_ExpData, base_id)
+foutput = '{}/MTSpectrum.{}.npz'.format(path_ExpData, base_id)
 if os.path.exists(foutput):
     print('Output file already exists: {}'.format(foutput))
     sys.exit()
@@ -111,14 +111,14 @@ win_pre_stim = list(np.arange(n_stim_start-n_win_dur, n_stim_start))
 win_post_stim = list(np.arange(n_stim_end+n_stim_pad, n_stim_end+n_stim_pad+n_win_dur))
 
 # Formulate output dictionary
-adj = {'Pre_Stim': {}, 'Post_Stim': {}}
+mtspectrum = {'Pre_Stim': {}, 'Post_Stim': {}}
 
-# Compute Pre-Stim Adjacency
-adj['Pre_Stim']['AlphaTheta'], adj['Pre_Stim']['Beta'], adj['Pre_Stim']['LowGamma'], adj['Pre_Stim']['HighGamma'] = Echobase.Pipelines.ecog_network.multiband_conn(evData_bp[win_pre_stim, :], fs, avgref=False)
+# Compute Pre-Stim multitaper spectrum
+mtspectrum['Pre_Stim']['freq'], mtspectrum['Pre_Stim']['psd'] = Echobase.Pipelines.ecog_powerspec.multiband(evData_bp[win_pre_stim, :], fs, avgref=False)
 
-# Compute Pre-Stim Adjacency
-adj['Post_Stim']['AlphaTheta'], adj['Post_Stim']['Beta'], adj['Post_Stim']['LowGamma'], adj['Post_Stim']['HighGamma'] = Echobase.Pipelines.ecog_network.multiband_conn(evData_bp[win_post_stim, :], fs, avgref=False)
+# Compute Post-Stim multitaper spectrum
+mtspectrum['Post_Stim']['freq'], mtspectrum['Post_Stim']['psd'] = Echobase.Pipelines.ecog_powerspec.multiband(evData_bp[win_post_stim, :], fs, avgref=False)
 
 # Save the output
-np.savez(foutput, adj=adj)
+np.savez(foutput, mtspectrum=mtspectrum)
 "
