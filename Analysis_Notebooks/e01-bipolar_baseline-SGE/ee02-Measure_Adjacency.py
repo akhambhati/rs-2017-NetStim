@@ -32,7 +32,7 @@ import Echobase
 # Set Paths
 path_CoreData = '/data/jag/bassett-lab/akhambhati/CORE.PS_Stim'
 path_PeriphData = '/data/jag/bassett-lab/akhambhati/RSRCH.PS_Stim'
-path_ExpData = path_PeriphData + '/e01-FuncNetw.CommonAverage.Baseline'
+path_ExpData = path_PeriphData + '/e02-FuncNetw.Bipolar.Baseline'
 
 for path in [path_CoreData, path_PeriphData, path_ExpData]:
     if not os.path.exists(path):
@@ -73,15 +73,15 @@ n_chan, n_samp = evData.shape
 
 # Handle electrodes
 chan_bp_id = np.array(sorted(df_chan['electrode_id_bp'].tolist(), key=lambda x: (x[0], x[1])))
-chan_mp_id = np.unique(chan_bp_id.reshape(-1))
-n_chan_mp = chan_mp_id.shape[0]
-evData_mp = np.zeros((n_chan_mp, n_samp))
+n_chan_bp = chan_bp_id.shape[0]
+evData_bp = np.zeros((n_chan_bp, n_samp))
 
-for chan_mp_ix, chan_mp in enumerate(chan_mp_id):
-    anode_ix = np.flatnonzero(df_chan['electrode_id'][0, :] == chan_mp)[0]
+for chan_bp_ix, chan_bp in enumerate(chan_bp_id):
+    anode_ix = np.flatnonzero(df_chan['electrode_id'][0, :] == chan_bp[0])[0]
+    cathode_ix = np.flatnonzero(df_chan['electrode_id'][0, :] == chan_bp[1])[0]
 
-    evData_mp[chan_mp_ix, :] = evData[anode_ix, :]
-evData_mp = evData_mp.T
+    evData_bp[chan_bp_ix, :] = evData[anode_ix, :] - evData[cathode_ix, :]
+evData_bp = evData_bp.T
 
 # Window the baseline clip
 n_win_dur = int(0.5*fs)
@@ -95,7 +95,7 @@ adj = {'AlphaTheta': [],
 
 for win_ix in xrange(n_win):
     clip_ix = np.arange(win_ix*n_win_dur, (win_ix+1)*n_win_dur)
-    adj_AlphaTheta, adj_Beta, adj_LowGamma, adj_HighGamma = Echobase.Pipelines.ecog_network.multiband_conn(evData_mp[clip_ix, :], fs, avgref=True)
+    adj_AlphaTheta, adj_Beta, adj_LowGamma, adj_HighGamma = Echobase.Pipelines.ecog_network.multiband_conn(evData_bp[clip_ix, :], fs, avgref=False)
 
     adj['AlphaTheta'].append(adj_AlphaTheta)
     adj['Beta'].append(adj_Beta)

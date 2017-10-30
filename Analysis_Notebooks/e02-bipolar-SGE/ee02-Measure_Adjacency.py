@@ -32,7 +32,7 @@ import Echobase
 # Set Paths
 path_CoreData = '/data/jag/bassett-lab/akhambhati/CORE.PS_Stim'
 path_PeriphData = '/data/jag/bassett-lab/akhambhati/RSRCH.PS_Stim'
-path_ExpData = path_PeriphData + '/e01-FuncNetw.CommonAverage.Stim'
+path_ExpData = path_PeriphData + '/e02-FuncNetw.Bipolar.Stim'
 
 for path in [path_CoreData, path_PeriphData, path_ExpData]:
     if not os.path.exists(path):
@@ -87,21 +87,17 @@ if event['type'][0] == 'SHAM':
     closest_event = np.argmin(np.abs(event_stim_ix - (int(event_id)-1)))
     stim_duration = df_event['events'][0, closest_event]['pulse_duration'][0, 0] / 1000.0
 
-stim_anode_jack = event['stimAnode'][0, 0]
-stim_cathode_jack = event['stimCathode'][0, 0]
-
 # Handle electrodes
 chan_bp_id = np.array(sorted(df_chan['electrode_id_bp'].tolist(), key=lambda x: (x[0], x[1])))
-chan_mp_id = np.unique(chan_bp_id.reshape(-1))
-chan_mp_id = np.setdiff1d(chan_mp_id, [stim_anode_jack, stim_cathode_jack])
-n_chan_mp = chan_mp_id.shape[0]
-evData_mp = np.zeros((n_chan_mp, n_samp))
+n_chan_bp = chan_bp_id.shape[0]
+evData_bp = np.zeros((n_chan_bp, n_samp))
 
-for chan_mp_ix, chan_mp in enumerate(chan_mp_id):
-    anode_ix = np.flatnonzero(df_chan['electrode_id'][0, :] == chan_mp)[0]
+for chan_bp_ix, chan_bp in enumerate(chan_bp_id):
+    anode_ix = np.flatnonzero(df_chan['electrode_id'][0, :] == chan_bp[0])[0]
+    cathode_ix = np.flatnonzero(df_chan['electrode_id'][0, :] == chan_bp[1])[0]
 
-    evData_mp[chan_mp_ix, :] = evData[anode_ix, :]
-evData_mp = evData_mp.T
+    evData_bp[chan_bp_ix, :] = evData[anode_ix, :] - evData[cathode_ix, :]
+evData_bp = evData_bp.T
 
 # Window the stimulation clip
 n_win_dur = int(0.5*fs)
@@ -118,10 +114,10 @@ win_post_stim = list(np.arange(n_stim_end+n_stim_pad, n_stim_end+n_stim_pad+n_wi
 adj = {'Pre_Stim': {}, 'Post_Stim': {}}
 
 # Compute Pre-Stim Adjacency
-adj['Pre_Stim']['AlphaTheta'], adj['Pre_Stim']['Beta'], adj['Pre_Stim']['LowGamma'], adj['Pre_Stim']['HighGamma'] = Echobase.Pipelines.ecog_network.multiband_conn(evData_mp[win_pre_stim, :], fs, avgref=True)
+adj['Pre_Stim']['AlphaTheta'], adj['Pre_Stim']['Beta'], adj['Pre_Stim']['LowGamma'], adj['Pre_Stim']['HighGamma'] = Echobase.Pipelines.ecog_network.multiband_conn(evData_bp[win_pre_stim, :], fs, avgref=False)
 
 # Compute Pre-Stim Adjacency
-adj['Post_Stim']['AlphaTheta'], adj['Post_Stim']['Beta'], adj['Post_Stim']['LowGamma'], adj['Post_Stim']['HighGamma'] = Echobase.Pipelines.ecog_network.multiband_conn(evData_mp[win_post_stim, :], fs, avgref=True)
+adj['Post_Stim']['AlphaTheta'], adj['Post_Stim']['Beta'], adj['Post_Stim']['LowGamma'], adj['Post_Stim']['HighGamma'] = Echobase.Pipelines.ecog_network.multiband_conn(evData_bp[win_post_stim, :], fs, avgref=False)
 
 # Save the output
 np.savez(foutput, adj=adj)
