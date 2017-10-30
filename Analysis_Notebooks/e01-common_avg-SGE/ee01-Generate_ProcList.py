@@ -16,7 +16,7 @@ import Echobase
 # Set Paths
 path_CoreData = '/data/jag/bassett-lab/akhambhati/CORE.PS_Stim'
 path_PeriphData = '/data/jag/bassett-lab/akhambhati/RSRCH.PS_Stim'
-path_ExpData = path_PeriphData + '/e01-FuncNetw.CommonAverage.Stim'
+path_ExpData = path_PeriphData + '/e01-MTSpectrum.CommonAverage.Stim'
 
 for path in [path_CoreData, path_PeriphData, path_ExpData]:
     if not os.path.exists(path):

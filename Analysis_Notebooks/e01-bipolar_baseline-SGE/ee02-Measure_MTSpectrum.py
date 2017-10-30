@@ -32,7 +32,7 @@ import Echobase
 # Set Paths
 path_CoreData = '/data/jag/bassett-lab/akhambhati/CORE.PS_Stim'
 path_PeriphData = '/data/jag/bassett-lab/akhambhati/RSRCH.PS_Stim'
-path_ExpData = path_PeriphData + '/e01-FuncNetw'
+path_ExpData = path_PeriphData + '/e01-MTSpectrum.Bipolar.Baseline'
 
 for path in [path_CoreData, path_PeriphData, path_ExpData]:
     if not os.path.exists(path):
@@ -62,7 +62,6 @@ if os.path.exists(foutput):
 try:
     df_raw = io.loadmat(pitem)
     df_chan = io.loadmat('{}/Electrode_Info/{}.mat'.format(path_CoreData, subj_id))
-    df_event = io.loadmat('{}/Event_Table/{}_events.mat'.format(path_CoreData, subj_id))
 except:
     print('Could not load raw, electrode, or event file for {}'.format(subj_id))
     sys.exit()
@@ -71,21 +70,6 @@ except:
 evData = df_raw['evData'][...]
 fs = int(np.ceil(df_raw['Fs'][0, 0]))
 n_chan, n_samp = evData.shape
-
-# Retrieve event and relevant information
-event = df_event['events'][0, int(event_id)-1]
-
-if not (event['type'][0] in ['STIMULATING', 'SHAM']):
-    print('Invalid Event Type: {}'.format(event['type'][0]))
-    sys.exit()
-
-if event['type'][0] == 'STIMULATING':
-    stim_duration = event['pulse_duration'][0, 0] / 1000.0
-
-if event['type'][0] == 'SHAM':
-    event_stim_ix = np.flatnonzero(df_event['events']['type'][0, :] == 'STIMULATING')
-    closest_event = np.argmin(np.abs(event_stim_ix - (int(event_id)-1)))
-    stim_duration = df_event['events'][0, closest_event]['pulse_duration'][0, 0] / 1000.0
 
 # Handle electrodes
 chan_bp_id = np.array(sorted(df_chan['electrode_id_bp'].tolist(), key=lambda x: (x[0], x[1])))
@@ -99,25 +83,24 @@ for chan_bp_ix, chan_bp in enumerate(chan_bp_id):
     evData_bp[chan_bp_ix, :] = evData[anode_ix, :] - evData[cathode_ix, :]
 evData_bp = evData_bp.T
 
-# Window the stimulation clip
+# Window the baseline clip
 n_win_dur = int(0.5*fs)
-
-n_stim_start = int(0.5*fs)
-n_stim_dur = int(stim_duration*fs)
-n_stim_end = n_stim_start + n_stim_dur
-n_stim_pad = int(25/1000.0*fs)
-
-win_pre_stim = list(np.arange(n_stim_start-n_win_dur, n_stim_start))
-win_post_stim = list(np.arange(n_stim_end+n_stim_pad, n_stim_end+n_stim_pad+n_win_dur))
+n_win = int(np.floor(n_samp / n_win_dur))
 
 # Formulate output dictionary
-adj = {'Pre_Stim': {}, 'Post_Stim': {}}
+adj = {'AlphaTheta': [],
+       'Beta': [],
+       'LowGamma': [],
+       'HighGamma': []}
 
-# Compute Pre-Stim Adjacency
-adj['Pre_Stim']['AlphaTheta'], adj['Pre_Stim']['Beta'], adj['Pre_Stim']['LowGamma'], adj['Pre_Stim']['HighGamma'] = Echobase.Pipelines.ecog_network.multiband_conn(evData_bp[win_pre_stim, :], fs, avgref=False)
+for win_ix in xrange(n_win):
+    clip_ix = np.arange(win_ix*n_win_dur, (win_ix+1)*n_win_dur)
+    adj_AlphaTheta, adj_Beta, adj_LowGamma, adj_HighGamma = Echobase.Pipelines.ecog_network.multiband_conn(evData_bp[clip_ix, :], fs, avgref=False)
 
-# Compute Pre-Stim Adjacency
-adj['Post_Stim']['AlphaTheta'], adj['Post_Stim']['Beta'], adj['Post_Stim']['LowGamma'], adj['Post_Stim']['HighGamma'] = Echobase.Pipelines.ecog_network.multiband_conn(evData_bp[win_post_stim, :], fs, avgref=False)
+    adj['AlphaTheta'].append(adj_AlphaTheta)
+    adj['Beta'].append(adj_Beta)
+    adj['LowGamma'].append(adj_LowGamma)
+    adj['HighGamma'].append(adj_HighGamma)
 
 # Save the output
 np.savez(foutput, adj=adj)

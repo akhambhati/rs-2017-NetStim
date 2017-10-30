@@ -17,7 +17,7 @@ import Echobase
 # Set Paths
 path_CoreData = '/Users/akhambhati/Remotes/CORE.PS_Stim'
 path_PeriphData = '/Users/akhambhati/Remotes/RSRCH.PS_Stim'
-path_ExpData = path_PeriphData + '/e02-FuncNetw.Bipolar.Baseline'
+path_ExpData = path_PeriphData + '/e01-MTSpectrum.Bipolar.Baseline'
 
 for path in [path_CoreData, path_PeriphData, path_ExpData]:
     if not os.path.exists(path):
