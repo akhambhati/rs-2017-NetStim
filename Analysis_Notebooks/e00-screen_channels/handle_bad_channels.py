@@ -143,9 +143,13 @@ def find_stim_artifact(subject_id):
         post_stim_mean_amp = np.array(post_stim_mean_amp)
 
         # Conduct a paired t-test per electrode
-        for ch_ix in xrange(n_chan):
-            ts, pv = stats.ttest_rel(pre_stim_mean_amp[:, ch_ix], post_stim_mean_amp[:, ch_ix])
-            if pv < (alpha / n_chan):
-                chan_artifact_ix[pair_tag_key].append(chan_mp_lbl[ch_ix])
+        if not (pre_stim_mean_amp.shape == post_stim_mean_amp.shape):
+            raise Exception('Channel mismatch of pre-post feature array')
+
+        if pre_stim_mean_amp.ndim == 2:
+            for ch_ix in xrange(len(chan_mp_id)):
+                ts, pv = stats.ttest_rel(pre_stim_mean_amp[:, ch_ix], post_stim_mean_amp[:, ch_ix])
+                if pv < (alpha / len(chan_mp_id)):
+                    chan_artifact_ix[pair_tag_key].append(chan_mp_lbl[ch_ix])
 
     return chan_artifact_ix
