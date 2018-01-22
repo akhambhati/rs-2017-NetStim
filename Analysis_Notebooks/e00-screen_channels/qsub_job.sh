@@ -1,3 +1,3 @@
 #!/bin/zsh
 
-qsub -t 1-110 ./ee02-Screen_Channels.py
+qsub -t 1-113 ./ee02-Screen_Channels.py
