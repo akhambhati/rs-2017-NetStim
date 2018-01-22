@@ -15,7 +15,6 @@ source activate echobase
 ipython -c "
 
 #### ---------------------- Front Matter ------------------------
-
 # Standard I/O imports
 import os
 import sys
@@ -24,20 +23,31 @@ import pickle as pkl
 import h5py
 import scipy.io as io
 
-# Data manipulation imports
-import numpy as np
-sys.path.append('/data/jag/akhambhati/hoth_research/Echobase')
-import Echobase
-
 # Set Paths
-path_CoreData = '/data/jag/bassett-lab/akhambhati/CORE.PS_Stim'
-path_PeriphData = '/data/jag/bassett-lab/akhambhati/RSRCH.PS_Stim'
+#location = 'Hoth'
+location = 'cfn'
+
+if location == 'Hoth':
+    sys.path.append('/Users/akhambhati/Developer/hoth_research/Echobase')
+    path_CoreData = '/Users/akhambhati/Remotes/CORE.PS_Stim'
+    path_PeriphData = '/Users/akhambhati/Remotes/RSRCH.PS_Stim'
+elif location == 'cfn':
+    sys.path.append('/data/jag/akhambhati/hoth_research/Echobase')
+    path_CoreData = '/data/jag/bassett-lab/akhambhati/CORE.PS_Stim'
+    path_PeriphData = '/data/jag/bassett-lab/akhambhati/RSRCH.PS_Stim'
+else:
+    raise Exception('Invalid location specified')
+path_InpData = path_PeriphData + '/e00-Clean_Channels'
 path_ExpData = path_PeriphData + '/e02-FuncNetw.CommonAverage.Baseline'
 
-for path in [path_CoreData, path_PeriphData, path_ExpData]:
+for path in [path_CoreData, path_PeriphData, path_InpData, path_ExpData]:
     if not os.path.exists(path):
         print('Path: {}, does not exist'.format(path))
         os.makedirs(path)
+
+# Data manipulation imports
+import numpy as np
+import Echobase
 #### ---------------------- Front Matter ------------------------
 
 # Grab the Task ID from QSUB
@@ -61,27 +71,15 @@ if os.path.exists(foutput):
 # Load data
 try:
     df_raw = io.loadmat(pitem)
-    df_chan = io.loadmat('{}/Electrode_Info/{}.mat'.format(path_CoreData, subj_id))
+    df_monop = np.load('{}/Clean_Channels.{}.npz'.format(path_InpData, subj_id))
 except:
     print('Could not load raw, electrode, or event file for {}'.format(subj_id))
     sys.exit()
 
 # Retrieve data
-evData = df_raw['evData'][...]
+evData = df_raw['evData'][...][df_monop['monopolar_resort_ix'], :].T
 fs = int(np.ceil(df_raw['Fs'][0, 0]))
-n_chan, n_samp = evData.shape
-
-# Handle electrodes
-chan_bp_id = np.array(sorted(df_chan['electrode_id_bp'].tolist(), key=lambda x: (x[0], x[1])))
-chan_mp_id = np.unique(chan_bp_id.reshape(-1))
-n_chan_mp = chan_mp_id.shape[0]
-evData_mp = np.zeros((n_chan_mp, n_samp))
-
-for chan_mp_ix, chan_mp in enumerate(chan_mp_id):
-    anode_ix = np.flatnonzero(df_chan['electrode_id'][0, :] == chan_mp)[0]
-
-    evData_mp[chan_mp_ix, :] = evData[anode_ix, :]
-evData_mp = evData_mp.T
+n_samp, n_chan = evData.shape
 
 # Window the baseline clip
 n_win_dur = int(0.5*fs)
