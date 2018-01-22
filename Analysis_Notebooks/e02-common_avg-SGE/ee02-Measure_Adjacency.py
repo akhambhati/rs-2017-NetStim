@@ -76,7 +76,7 @@ try:
 except:
     print('Could not load raw, electrode, or event file for {}'.format(subj_id))
     sys.exit()
-    
+
 # Retrieve data
 evData = df_raw['evData'][...][df_monop['monopolar_resort_ix'], :].T
 fs = int(np.ceil(df_raw['Fs'][0, 0]))
@@ -97,14 +97,14 @@ if event['type'][0] == 'SHAM':
     closest_event = np.argmin(np.abs(event_stim_ix - (int(event_id)-1)))
     stim_duration = df_event['events'][0, closest_event]['pulse_duration'][0, 0] / 1000.0
 
-stim_anode_tag = df_event['events'][0][event_id]['stimAnodeTag'][0]
-stim_cathode_tag = df_event['events'][0][event_id]['stimCathodeTag'][0]
+stim_anode_tag = event['stimAnodeTag'][0]
+stim_cathode_tag = event['stimCathodeTag'][0]
 stim_pair_tag = '_'.join({stimAnodeTag, stimCathodeTag})
 
 # Remove artifactual channels for this stim location
 goodchan_ix = np.setdiff1d(np.arange(n_chan), df_monop[stim_pair_tag])
 evData = evData[:, goodchan_ix]
-    
+
 # Window the stimulation clip
 n_win_dur = int(0.5*fs)
 
