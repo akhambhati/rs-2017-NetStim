@@ -99,7 +99,7 @@ if event['type'][0] == 'SHAM':
 
 stim_anode_tag = event['stimAnodeTag'][0]
 stim_cathode_tag = event['stimCathodeTag'][0]
-stim_pair_tag = '_'.join({stimAnodeTag, stimCathodeTag})
+stim_pair_tag = '_'.join({stim_anode_tag, stim_cathode_tag})
 
 # Remove artifactual channels for this stim location
 goodchan_ix = np.setdiff1d(np.arange(n_chan), df_monop[stim_pair_tag])
