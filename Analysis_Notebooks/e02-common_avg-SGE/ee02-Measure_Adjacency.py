@@ -100,16 +100,18 @@ def run(pitem):
     n_stim_pad = int(100/1000.0*fs)
 
     win_pre_stim = list(np.arange(n_stim_start-n_win_dur, n_stim_start))
-    win_post_stim = list(np.arange(n_stim_end+n_stim_pad, n_stim_end+n_stim_pad+n_win_dur))
+    win_post_stim_1 = list(np.arange(n_stim_end+n_stim_pad, n_stim_end+n_stim_pad+n_win_dur))
+    win_post_stim_2 = list(np.arange(n_stim_end+n_stim_pad+n_win_dur, n_stim_end+n_stim_pad+2*n_win_dur))
 
     # Formulate output dictionary
-    adj = {'Pre_Stim': {}, 'Post_Stim': {}}
+    adj = {'Pre_Stim': {}, 'Post_Stim_1': {}, 'Post_Stim_2': {}}
 
     # Compute Pre-Stim Adjacency
     adj['Pre_Stim']['AlphaTheta'], adj['Pre_Stim']['Beta'], adj['Pre_Stim']['LowGamma'], adj['Pre_Stim']['HighGamma'] = Echobase.Pipelines.ecog_network.multiband_conn(evData[win_pre_stim, :], fs, avgref=True)
 
     # Compute Pre-Stim Adjacency
-    adj['Post_Stim']['AlphaTheta'], adj['Post_Stim']['Beta'], adj['Post_Stim']['LowGamma'], adj['Post_Stim']['HighGamma'] = Echobase.Pipelines.ecog_network.multiband_conn(evData[win_post_stim, :], fs, avgref=True)
+    adj['Post_Stim_1']['AlphaTheta'], adj['Post_Stim_1']['Beta'], adj['Post_Stim_1']['LowGamma'], adj['Post_Stim_1']['HighGamma'] = Echobase.Pipelines.ecog_network.multiband_conn(evData[win_post_stim_1, :], fs, avgref=True)
+    adj['Post_Stim_2']['AlphaTheta'], adj['Post_Stim_2']['Beta'], adj['Post_Stim_2']['LowGamma'], adj['Post_Stim_2']['HighGamma'] = Echobase.Pipelines.ecog_network.multiband_conn(evData[win_post_stim_2, :], fs, avgref=True)
 
     return adj
 
