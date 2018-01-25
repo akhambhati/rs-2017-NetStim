@@ -107,11 +107,21 @@ def run(pitem):
     adj = {'Pre_Stim': {}, 'Post_Stim_1': {}, 'Post_Stim_2': {}}
 
     # Compute Pre-Stim Adjacency
-    adj['Pre_Stim']['AlphaTheta'], adj['Pre_Stim']['Beta'], adj['Pre_Stim']['LowGamma'], adj['Pre_Stim']['HighGamma'] = Echobase.Pipelines.ecog_network.multiband_conn(evData[win_pre_stim, :], fs, avgref=True)
+    if (np.min(win_pre_stim) >= 0) & (np.max(win_pre_stim) < n_samp):
+        adj['Pre_Stim']['AlphaTheta'], adj['Pre_Stim']['Beta'], adj['Pre_Stim']['LowGamma'], adj['Pre_Stim']['HighGamma'] = Echobase.Pipelines.ecog_network.multiband_conn(evData[win_pre_stim, :], fs, avgref=True)
+    else:
+        adj['Pre_Stim'] = []
 
     # Compute Pre-Stim Adjacency
-    adj['Post_Stim_1']['AlphaTheta'], adj['Post_Stim_1']['Beta'], adj['Post_Stim_1']['LowGamma'], adj['Post_Stim_1']['HighGamma'] = Echobase.Pipelines.ecog_network.multiband_conn(evData[win_post_stim_1, :], fs, avgref=True)
-    adj['Post_Stim_2']['AlphaTheta'], adj['Post_Stim_2']['Beta'], adj['Post_Stim_2']['LowGamma'], adj['Post_Stim_2']['HighGamma'] = Echobase.Pipelines.ecog_network.multiband_conn(evData[win_post_stim_2, :], fs, avgref=True)
+    if (np.min(win_post_stim_1) >= 0) & (np.max(win_post_stim_1) < n_samp):
+        adj['Post_Stim_1']['AlphaTheta'], adj['Post_Stim_1']['Beta'], adj['Post_Stim_1']['LowGamma'], adj['Post_Stim_1']['HighGamma'] = Echobase.Pipelines.ecog_network.multiband_conn(evData[win_post_stim_1, :], fs, avgref=True)
+    else:
+        adj['Post_Stim_1'] = []
+
+    if (np.min(win_post_stim_2) >= 0) & (np.max(win_post_stim_2) < n_samp):
+        adj['Post_Stim_2']['AlphaTheta'], adj['Post_Stim_2']['Beta'], adj['Post_Stim_2']['LowGamma'], adj['Post_Stim_2']['HighGamma'] = Echobase.Pipelines.ecog_network.multiband_conn(evData[win_post_stim_2, :], fs, avgref=True)
+    else:
+        adj['Post_Stim_2'] = []
 
     return adj
 
