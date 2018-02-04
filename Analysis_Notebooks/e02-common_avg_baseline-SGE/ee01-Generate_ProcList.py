@@ -13,12 +13,10 @@ location = 'cfn'
 
 if location == 'Hoth':
     sys.path.append('/Users/akhambhati/Developer/hoth_research/Echobase')
-    sys.path.append('/Users/akhambhati/Developer/hoth_research/rs-Net_Stim/Analysis_Notebooks/e00-screen_channels')        
     path_CoreData = '/Users/akhambhati/Remotes/CORE.PS_Stim'
     path_PeriphData = '/Users/akhambhati/Remotes/RSRCH.PS_Stim'
 elif location == 'cfn':
     sys.path.append('/data/jag/akhambhati/hoth_research/Echobase')
-    sys.path.append('/data/jag/akhambhati/hoth_research/rs-Net_Stim/Analysis_Notebooks/e00-screen_channels')            
     path_CoreData = '/data/jag/bassett-lab/akhambhati/CORE.PS_Stim'
     path_PeriphData = '/data/jag/bassett-lab/akhambhati/RSRCH.PS_Stim'
 else:
