@@ -31,7 +31,6 @@ for path in [path_CoreData, path_PeriphData, path_ExpData]:
 # Data manipulation imports
 import numpy as np
 import Echobase
-import handle_bad_channels
 #### ---------------------- Front Matter ------------------------
 
 raw_path = glob.glob('{}/Base_Trials/*.mat'.format(path_CoreData))
