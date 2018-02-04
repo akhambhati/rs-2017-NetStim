@@ -82,7 +82,7 @@ def run(pitem):
 
     # Remove artifactual channels for this stim location
     for stim_pair_tag in df_monop['monopolar_id_artifact'][()].keys():
-        adj[stim_pair_tag} = {}
+        adj[stim_pair_tag] = {}
 
         stim_pair_lbl = stim_pair_tag.split('_')
         nonstim_lbl_artifact = np.unique(np.setdiff1d(
@@ -101,7 +101,7 @@ def run(pitem):
 
             # Window the baseline clip
             n_win_dur = int(0.5*fs)
-            n_stim_dur = int((stim_duration/1000.0)*fs)
+            n_stim_dur = int((stim_dur/1000.0)*fs)
             n_stim_end = n_win_dur + n_stim_dur
             n_stim_pad = int(100/1000.0*fs)
 
@@ -111,11 +111,14 @@ def run(pitem):
             for block_ix in xrange(n_block):
                 start_ix = block_ix*n_win_block
                 win_pre_stim = list(np.arange(start_ix, start_ix+n_win_dur))
-                win_post_stim = list(np.arange(start_ix+n_stim_end+n_stim_pad,
-                                               start_ix+n_stim_end+n_stim_pad+n_win_dur))
+                win_post_stim_1= list(np.arange(start_ix+n_stim_end+n_stim_pad,
+                                                start_ix+n_stim_end+n_stim_pad+n_win_dur))
+                win_post_stim_2= list(np.arange(start_ix+n_stim_end+n_stim_pad+n_win_dur,
+                                                start_ix+n_stim_end+n_stim_pad+2*n_win_dur))
+
 
                 # Formulate output dictionary for this block
-                adj_temp = {'Pre_Stim': {}, 'Post_Stim_1': {}}
+                adj_temp = {'Pre_Stim': {}, 'Post_Stim_1': {}, 'Post_Stim_2': {}}
 
                 # Compute Pre-Stim adjacency
                 if (np.min(win_pre_stim) >= 0) & (np.max(win_pre_stim) < n_samp):
@@ -128,6 +131,13 @@ def run(pitem):
                     adj_temp['Post_Stim_1']['AlphaTheta'], adj_temp['Post_Stim_1']['Beta'], adj_temp['Post_Stim_1']['LowGamma'], adj_temp['Post_Stim_1']['HighGamma'] = Echobase.Pipelines.ecog_network.multiband_conn(evData_good[win_post_stim_1, :], fs, avgref=True)
                 else:
                     adj_temp['Post_Stim_1'] = []
+
+                # Compute Post-Stim adjacency
+                if (np.min(win_post_stim_2) >= 0) & (np.max(win_post_stim_2) < n_samp):
+                    adj_temp['Post_Stim_2']['AlphaTheta'], adj_temp['Post_Stim_2']['Beta'], adj_temp['Post_Stim_2']['LowGamma'], adj_temp['Post_Stim_2']['HighGamma'] = Echobase.Pipelines.ecog_network.multiband_conn(evData_good[win_post_stim_2, :], fs, avgref=True)
+                else:
+                    adj_temp['Post_Stim_2'] = []
+
 
                 adj[stim_pair_tag][stim_dur].append(adj_temp)
 
