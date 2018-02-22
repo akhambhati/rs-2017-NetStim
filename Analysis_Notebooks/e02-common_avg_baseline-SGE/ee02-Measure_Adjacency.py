@@ -141,7 +141,7 @@ def run(pitem):
 
                 adj[stim_pair_tag][stim_dur].append(adj_temp)
 
-        return adj
+    return adj
 
 if __name__ == '__main__':
     # Grab the Task ID from QSUB
