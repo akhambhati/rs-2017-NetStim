@@ -55,7 +55,7 @@ def init_channels(subject_id):
     if not (df_chan['electrode_id_bp'].shape == df_chan['electrode_label_bp'].shape):
         raise Exception('Bipolar IDs and Bipolar Labels are mismatched.')
     chan_mp_id, unique_ix = np.unique(df_chan['electrode_id_bp'].reshape(-1), return_index=True)
-    chan_mp_lbl = np.array([ee[0] for ee in df_chan['electrode_label_bp'].reshape(-1)])[unique_ix]
+    chan_mp_lbl = np.array([ee[0].upper() for ee in df_chan['electrode_label_bp'].reshape(-1)])[unique_ix]
     n_chan_mp = len(chan_mp_id)
 
     # Screen visually-identified bad channels
@@ -65,7 +65,13 @@ def init_channels(subject_id):
     if len(np.setdiff1d(chan_mp_id, df_chan['electrode_id'][0, :])) > 0:
         raise Exception('Monopolar list contains IDs not in master electrode list.')
     resort_ix = find_index_in_list(df_chan['electrode_id'][0, :], chan_mp_id)
-
+    
+    # Get electrode label subset from resort ix
+    chan_mp_lbl = chan_mp_lbl[resort_ix]
+    
+    if len(chan_mp_lbl) != len(chan_mp_id):
+        raise Exception('Monopolar labels and IDs have unequal counts.')
+        
     return chan_mp_id, chan_mp_lbl, resort_ix
 
 
@@ -73,7 +79,7 @@ def find_stim_artifact(subject_id):
     df_event = io.loadmat('{}/Event_Table/{}_events.mat'.format(path_CoreData, subject_id))
 
     # Get unique stim anode/cathode pairs
-    stim_pair_tag = np.unique([set([ev['stimAnodeTag'][0], ev['stimCathodeTag'][0]])
+    stim_pair_tag = np.unique([set([ev['stimAnodeTag'][0].upper(), ev['stimCathodeTag'][0].upper()])
                                  for ev in df_event['events'][0]])
 
     # Screen stimulation-related electrodes
@@ -97,7 +103,7 @@ def find_stim_artifact(subject_id):
             if not ev['type'][0] in ['STIMULATING']:
                 continue
 
-            ev_pair_tag = {ev['stimAnodeTag'][0], ev['stimCathodeTag'][0]}
+            ev_pair_tag = {ev['stimAnodeTag'][0].upper(), ev['stimCathodeTag'][0].upper()}
             if not (ev_pair_tag == pair_tag):
                 continue
 
