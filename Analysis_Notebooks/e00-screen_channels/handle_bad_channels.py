@@ -59,18 +59,18 @@ def init_channels(subject_id):
     n_chan_mp = len(chan_mp_id)
 
     # Screen visually-identified bad channels
-    chan_mp_id = np.intersect1d(chan_mp_id, df_chan['electrode_good'][:, 0])
+    #chan_mp_id = np.intersect1d(chan_mp_id, df_chan['electrode_good'][:, 0])
 
     # Re-sort electrodes in order of chan_mp_id
     if len(np.setdiff1d(chan_mp_id, df_chan['electrode_id'][0, :])) > 0:
         raise Exception('Monopolar list contains IDs not in master electrode list.')
     resort_ix = find_index_in_list(df_chan['electrode_id'][0, :], chan_mp_id)
     
-    # Get electrode label subset from resort ix
-    chan_mp_lbl = chan_mp_lbl[resort_ix]
-    
     if len(chan_mp_lbl) != len(chan_mp_id):
         raise Exception('Monopolar labels and IDs have unequal counts.')
+
+    if len(chan_mp_id) != len(resort_ix):
+        raise Exception('The raw channel resort indices do not match the monopolar IDs')
         
     return chan_mp_id, chan_mp_lbl, resort_ix
 
